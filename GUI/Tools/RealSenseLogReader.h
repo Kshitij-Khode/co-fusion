@@ -14,8 +14,7 @@
 #include <poll.h>
 #include <signal.h>
 
-#include <Utils/Parse.h>
-
+#include "Utils/Parse.h"
 #include "LogReader.h"
 
 class RealSenseLogReader : public LogReader {
@@ -24,9 +23,8 @@ class RealSenseLogReader : public LogReader {
   RealSenseLogReader(std::string file, bool flipColors);
   virtual ~RealSenseLogReader();
 
-  bool initStreaming();
   void getNext();
-  int getNumFrames();
+  int  getNumFrames();
   bool hasMore();
   bool rewind() { return false; }
   void getPrevious() {}

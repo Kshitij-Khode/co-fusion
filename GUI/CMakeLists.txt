@@ -51,7 +51,7 @@ add_executable(CoFusion
 )
 
 target_link_libraries(CoFusion
-                      realsense
+                      realsense2
                       cofusion
                       ${ZLIB_LIBRARY}
                       ${Pangolin_LIBRARIES}
@@ -67,7 +67,7 @@ add_library(CoFusionTools SHARED
             ${tools_srcs})
 
 target_link_libraries(CoFusionTools
-                      realsense
+                      realsense2
                       ${ZLIB_LIBRARY}
                       ${Pangolin_LIBRARIES}
                       ${CUDA_LIBRARIES}

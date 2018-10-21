@@ -9,71 +9,42 @@
 
 #include "RealSenseLogReader.h"
 
-#include <librealsense/rs.hpp>
+#include <librealsense2/rs.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-using namespace rs;
+using namespace rs2;
 
-int const FRAMERATE = 60;
-
-context _rs_ctx;
-device* _rs_camera = NULL;
-intrinsics _depth_intrin;
-intrinsics _color_intrin;
+rs2::pipeline _pipe2;
 
 RealSenseLogReader::RealSenseLogReader(std::string file, bool flipColors) : LogReader(file, flipColors) {
-  rs::log_to_console(rs::log_severity::warn);
+
+  rs2::log_to_console(RS2_LOG_SEVERITY_ERROR);
   std::cout << "Creating live capture... ";
 
-  if(!initStreaming()) {
-    rs::log_to_console(rs::log_severity::fatal);
-    std::cout << "Unable to locate a camera" << std::endl;
-    std::cout.flush();
+  _pipe2.start();
 
-    return;
-  }
+  rs2::frameset frameSet = _pipe2.wait_for_frames();
+  depth_frame depthFrame = frameSet.get_depth_frame();
 
-  _depth_intrin = _rs_camera->get_stream_intrinsics(rs::stream::depth);
-  _color_intrin = _rs_camera->get_stream_intrinsics(rs::stream::color);
-
-  data.allocateRGBD(_depth_intrin.width, _depth_intrin.height);
-
-  if(_rs_camera->is_streaming()) _rs_camera->wait_for_frames();
+  data.allocateRGBD(depthFrame.get_width(), depthFrame.get_height());
 }
 
-RealSenseLogReader::~RealSenseLogReader() { _rs_camera->stop(); }
-
-bool RealSenseLogReader::initStreaming() {
-  if(_rs_ctx.get_device_count() > 0) {
-    _rs_camera = _rs_ctx.get_device(0);
-    _rs_camera->enable_stream(rs::stream::color,
-                              Resolution::getInstance().width(),
-                              Resolution::getInstance().height(),
-                              rs::format::rgb8,
-                              FRAMERATE);
-    _rs_camera->enable_stream(rs::stream::depth,
-                              Resolution::getInstance().width(),
-                              Resolution::getInstance().height(),
-                              rs::format::z16,
-                              FRAMERATE);
-    _rs_camera->start();
-
-    return true;
-  }
-  return false;
-}
+RealSenseLogReader::~RealSenseLogReader() { }
 
 void RealSenseLogReader::getNext() {
 
-  if(_rs_camera->is_streaming()) _rs_camera->wait_for_frames();
+  rs2::frameset frameSet = _pipe2.wait_for_frames();
+  depth_frame depthFrame = frameSet.get_depth_frame();
+  video_frame colorFrame = frameSet.get_color_frame();
 
-  cv::Mat depth16(_depth_intrin.height, _depth_intrin.width, CV_16U, (uchar*)_rs_camera->get_frame_data(rs::stream::depth));
-  cv::Mat rgb(_color_intrin.height, _color_intrin.width, CV_8UC3, (uchar*)_rs_camera->get_frame_data(rs::stream::color));
+  // KBK Channge get_height to HEIGHT, (void*) to (*uchar)
+  cv::Mat depth16(depthFrame.get_height(), depthFrame.get_width(), CV_16UC1, (uchar*)depthFrame.get_data());
+  cv::Mat rgb8(colorFrame.get_height(), colorFrame.get_width(), CV_8UC3, (uchar*)colorFrame.get_data());
 
   depth16.convertTo(data.depth, CV_32FC1, 0.001);
-  rgb.convertTo(data.rgb, CV_8UC3);
+  rgb8.convertTo(data.rgb, CV_8UC3);
 
   data.timestamp = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
   if (flipColors) data.flipColors();
