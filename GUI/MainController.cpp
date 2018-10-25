@@ -21,7 +21,7 @@
 #include "Tools/KlgLogReader.h"
 #include "Tools/LiveLogReader.h"
 #include "Tools/ImageLogReader.h"
-#include "Tools/RealSenseLogReader.h"
+#include "Tools/RealSenseLogReader.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
