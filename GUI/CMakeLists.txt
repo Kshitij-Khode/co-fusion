@@ -19,6 +19,7 @@ include_directories(${OPENNI2_INCLUDE_DIR})
 include_directories(${Pangolin_INCLUDE_DIRS})
 include_directories(${BOOST_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories("/usr/local/include")
 
 message("Include-directories: ")
 message("ZLIB_INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
@@ -42,12 +43,15 @@ endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
 add_definitions(-Dlinux=1)
 
+link_directories("/usr/lib/x86_64-linux-gnu/")
+
 add_executable(CoFusion
                ${srcs}
                ${tools_srcs}
 )
 
 target_link_libraries(CoFusion
+                      realsense2
                       cofusion
                       ${ZLIB_LIBRARY}
                       ${Pangolin_LIBRARIES}
@@ -63,6 +67,7 @@ add_library(CoFusionTools SHARED
             ${tools_srcs})
 
 target_link_libraries(CoFusionTools
+                      realsense2
                       ${ZLIB_LIBRARY}
                       ${Pangolin_LIBRARIES}
                       ${CUDA_LIBRARIES}
@@ -74,6 +79,7 @@ target_link_libraries(CoFusionTools
 )
 
 target_include_directories(CoFusionTools PUBLIC
+                            "/usr/local/include"
                             ${CMAKE_CURRENT_SOURCE_DIR}
                             ${ZLIB_INCLUDE_DIR}
                             ${Pangolin_INCLUDE_DIRS}

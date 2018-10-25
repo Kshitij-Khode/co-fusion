@@ -21,6 +21,7 @@
 #include "Tools/KlgLogReader.h"
 #include "Tools/LiveLogReader.h"
 #include "Tools/ImageLogReader.h"
+#include "Tools/RealSenseLogReader.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -110,6 +111,12 @@ MainController::MainController(int argc, char* argv[])
   if (calibrationFile.length()) loadCalibration(calibrationFile);
 
   bool logReaderReady = false;
+
+  std::string pathToBag;
+  if (Parse::get().arg(argc, argv, "-realSense", pathToBag) > -1) {
+    logReader = std::make_unique<RealSenseLogReader>(pathToBag, false);
+    logReaderReady = true;
+  }
 
   Parse::get().arg(argc, argv, "-l", logFile);
   if (logFile.length()) {
