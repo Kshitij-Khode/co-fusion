@@ -77,7 +77,7 @@ class RealSenseLogReader : public LogReader {
     cv::Mat depth16(depthFrame.get_height(), depthFrame.get_width(), CV_16UC1, (uchar*)depthFrame.get_data());
     cv::Mat rgb8(colorFrame.get_height(), colorFrame.get_width(), CV_8UC3, (uchar*)colorFrame.get_data());
 
-    depth16.convertTo(data.depth, CV_32FC1, 0.001);
+    depth16.convertTo(data.depth, CV_32FC1, 0.001f * 6.f/32.f);
     rgb8.convertTo(data.rgb, CV_8UC3);
 
     data.timestamp = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
