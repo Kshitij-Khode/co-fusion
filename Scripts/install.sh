@@ -43,11 +43,12 @@ if [ "${1:-}" = "--fresh-install" ]; then
     sudo apt-get update > /dev/null
     sudo apt-get install cuda-7-5
   elif [[ $DISTRIB_CODENAME == *"xenial"* ]]; then
-    wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
-    sudo dpkg -i cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
-    rm cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
-    sudo apt-get update > /dev/null
-    sudo apt-get install -y cuda-8-0
+    echo '[FORCE] Skipping install of cuda'
+    # wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+    # sudo dpkg -i cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+    # rm cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+    # sudo apt-get update > /dev/null
+    # sudo apt-get install -y cuda-8-0
   else
     echo "$DISTRIB_CODENAME is not yet supported"
     exit 1
