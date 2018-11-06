@@ -35,6 +35,7 @@ class RealSenseLogReader : public LogReader {
 
   RealSenseLogReader(std::string file, bool flipColors) : LogReader(file, flipColors) {
 
+
     rs2::log_to_console(RS2_LOG_SEVERITY_ERROR);
     std::cout << "Creating live capture... ";
 
@@ -43,16 +44,27 @@ class RealSenseLogReader : public LogReader {
     cfg.enable_stream(RS2_STREAM_DEPTH, FRAME_WIDTH, FRAME_HEIGHT, RS2_FORMAT_Z16, FRAME_RATE);
     cfg.enable_stream(RS2_STREAM_COLOR, FRAME_WIDTH, FRAME_HEIGHT, RS2_FORMAT_RGB8, FRAME_RATE);
 
-    rs2::device selectedDev = pipe2.start(cfg).get_device();
+    rs2::pipeline_profile profile = pipe2.start(cfg);
+    auto depthStream = profile.get_stream(RS2_STREAM_COLOR).as<rs2::video_stream_profile>();
+    auto intrisics = depthStream.get_intrinsics();
 
+    rs2::device selectedDev = profile.get_device();
     rs2::sensor depthSensor = selectedDev.query_sensors()[0];
     rs2::sensor colorSensor = selectedDev.query_sensors()[1];
 
-    depthSensor.set_option(RS2_OPTION_LASER_POWER, 1.f);
-    depthSensor.set_option(RS2_OPTION_ACCURACY, 1.f);
-    depthSensor.set_option(RS2_OPTION_MOTION_RANGE, 9.f);
-    depthSensor.set_option(RS2_OPTION_FILTER_OPTION, 7.f);
-    depthSensor.set_option(RS2_OPTION_CONFIDENCE_THRESHOLD, 0.f);
+    std::cout << "Camera intrinsics: "
+              << intrisics.fx << " "
+              << intrisics.fy << " "
+              << intrisics.ppx << " "
+              << intrisics.ppy << std::endl;
+
+    Intrinsics::setIntrinics(intrisics.fx, intrisics.fy, intrisics.ppx, intrisics.ppy);
+
+    // depthSensor.set_option(RS2_OPTION_LASER_POWER, 1.f);
+    // depthSensor.set_option(RS2_OPTION_ACCURACY, 1.f);
+    // depthSensor.set_option(RS2_OPTION_MOTION_RANGE, 9.f);
+    // depthSensor.set_option(RS2_OPTION_FILTER_OPTION, 7.f);
+    // depthSensor.set_option(RS2_OPTION_CONFIDENCE_THRESHOLD, 0.f);
 
     rs2::frameset frameSet = pipe2.wait_for_frames();
     depth_frame depthFrame = frameSet.get_depth_frame();
@@ -77,8 +89,12 @@ class RealSenseLogReader : public LogReader {
     cv::Mat depth16(depthFrame.get_height(), depthFrame.get_width(), CV_16UC1, (uchar*)depthFrame.get_data());
     cv::Mat rgb8(colorFrame.get_height(), colorFrame.get_width(), CV_8UC3, (uchar*)colorFrame.get_data());
 
-    depth16.convertTo(data.depth, CV_32FC1, 0.001f * 6.f/32.f);
+    depth16.convertTo(data.depth, CV_32FC1, 0.001f);
     rgb8.convertTo(data.rgb, CV_8UC3);
+
+    // double min, max;
+    // cv::minMaxLoc(data.depth, &min, &max);
+    // std::cout << min << " " << max << std::endl;
 
     data.timestamp = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
     if (flipColors) data.flipColors();

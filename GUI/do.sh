@@ -1,8 +1,8 @@
 if [ "${1}" = "--build" ]; then
 
-    export BOOST_ROOT="/home/kshitij/codeSandbox/co-fusion/deps/boost/"
-    export OpenCV_DIR="/home/kshitij/codeSandbox/co-fusion/deps/opencv-3.1.0/build"
-    export Pangolin_DIR="/home/kshitij/codeSandbox/co-fusion/deps/Pangolin/build"
+    export BOOST_ROOT="/home/kshitij/codeSandbox/repos/co-fusion/deps/boost/"
+    export OpenCV_DIR="/home/kshitij/codeSandbox/repos/co-fusion/deps/opencv-3.1.0/build"
+    export Pangolin_DIR="/home/kshitij/codeSandbox/repos/co-fusion/deps/Pangolin/build"
 
     cd ../build/
 
